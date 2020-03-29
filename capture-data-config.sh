@@ -33,9 +33,16 @@ MYSQL_FREEZE_ONLY_MYISAM=0
 if [ -f /root/.my.cnf ]; then
     echo "$(date -Ins) - MySQL .my.cnf exists." >> "$LOGFILE"
     MYSQL_USER=`awk -F "=" '/user/ {print $2}' /root/.my.cnf`
-    mysql_password=`awk -F "=" '/password/ {print $2}' /root/.my.cnf`
+    MYSQL_PASSWORD=`awk -F "=" '/password/ {print $2}' /root/.my.cnf`
 elif [ -f /usr/local/directadmin/conf/my.cnf ]; then
     echo "$(date -Ins) - DirectAdmin detected - loading my.cnf." >> "$LOGFILE"
     MYSQL_USER=`awk -F "=" '/user/ {print $2}' /usr/local/directadmin/conf/my.cnf`
-    mysql_password=`awk -F "=" '/password/ {print $2}' /usr/local/directadmin/conf/my.cnf`
+    MYSQL_PASSWORD=`awk -F "=" '/password/ {print $2}' /usr/local/directadmin/conf/my.cnf`
 fi
+
+echo "[client]
+user=$MYSQL_USER
+password=$MYSQL_PASSWORD
+" >> $DIR/conf/my_extra.cnf 
+
+echo $DIR/conf/my_extra.cnf >> "$LOGFILE"

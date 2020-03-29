@@ -10,8 +10,8 @@ Use this script to create database dumps from backups. You can restore the backu
 2. Follow [our documentation](https://support.yourwebhoster.eu/en-us/article/91-backup-mysql-using-acronis-cloud-backup).
 
 ```
-cat /var/lib/Acronis/
-git clone git@github.com:Yourwebhostereu/acronis-mysql.git mysql
+cd /var/lib/Acronis/
+git clone https://github.com/Yourwebhostereu/acronis-mysql.git mysql
 ```
 
 ## How to restore a database

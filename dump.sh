@@ -7,6 +7,7 @@ mysql_bin=`which mysql`
 mysqld_bin=`which mysqld_safe`
 mysqldump_bin=`which mysqldump`
 mysqladmin_bin=`which mysqladmin`
+source "$DIR"/capture-data-config.sh
 
 function usage()
 {
@@ -93,6 +94,6 @@ $mysql_bin --defaults-extra-file=$DIR/conf/my_extra.cnf \
 
 echo "DONE"
 echo ""
-echo "Dumped atabase $database to /tmp_mysql/$database.sql"
+echo "Dumped database $database to /tmp_mysql/$database.sql"
 echo "Restore with a command like:"
 echo 'mysql < /tmp_mysql/$database.sql'
