@@ -43,6 +43,6 @@ fi
 echo "[client]
 user=$MYSQL_USER
 password=$MYSQL_PASSWORD
-" >> $DIR/conf/my_extra.cnf 
+" > $DIR/conf/my_extra.cnf 
 
 echo $DIR/conf/my_extra.cnf >> "$LOGFILE"
