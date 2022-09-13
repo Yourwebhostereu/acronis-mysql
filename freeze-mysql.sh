@@ -7,11 +7,6 @@ source "$DIR"/capture-data-config.sh
 
 echo "$(date -Ins) - MYSQL USER IS $MYSQL_USER" >> "$LOGFILE"
 
-if [ -z "$MYSQL_USER" ]; then
-  echo "$(date -Ins) - MySQL user is empty; checking if ~/.my.cnf exists." >> "$LOGFILE"
-  MYSQL_PASSWORD="$(cat "$MYSQL_PASSWORD_PATH")"
-fi
-
 if [ -f "$MYSQL_FREEZE_LOCKFILE" ]; then
   if [ -n "$(ps -p "$(/bin/cat "$MYSQL_FREEZE_LOCKFILE")" -o pid=)" ]; then
     echo "Can not start freezing because process already exists" >> "$LOGFILE"
@@ -30,7 +25,7 @@ flush_tables_sql="FLUSH TABLES; FLUSH TABLES; FLUSH TABLES WITH READ LOCK"
 if [ "$MYSQL_FREEZE_ONLY_MYISAM" -eq "1" ]; then
   sql_myisam_tables="SET SESSION group_concat_max_len = 4294967295; \
     SELECT COUNT(*), IFNULL(GROUP_CONCAT(t.db_table SEPARATOR ','), '') as res FROM (SELECT CONCAT('\`', TABLE_SCHEMA, '\`.\`', TABLE_NAME, '\`') as db_table FROM information_schema.TABLES WHERE ENGINE='MyISAM' AND TABLE_SCHEMA NOT IN('mysql','information_schema','performance_schema')) t;"
-  sql_output=$(mysql --user="$MYSQL_USER" --password="$MYSQL_PASSWORD" --execute="$sql_myisam_tables" | tail -n +2 | awk '{$1=$1;print}')
+  sql_output=$(mysql --defaults-file=$DIR/conf/my_extra.cnf --execute="$sql_myisam_tables" | tail -n +2 | awk '{$1=$1;print}')
   read myisam_tables_num myisam_tables < <(echo $sql_output)
   if [ -z "$myisam_tables" ]; then
       echo "$(date -Ins) - There are no MyISAM tables to lock." >> "$LOGFILE"
@@ -47,7 +42,7 @@ fi
 freeze_sql="SELECT CONNECTION_ID(); $flush_tables_sql; SYSTEM touch \"$MYSQL_FREEZE_LOCKFILE\"; SYSTEM sleep $MYSQL_FREEZE_SNAPSHOT_TIMEOUT;"
 freeze_sql_file="$DIR/freeze_mysql.sql"
 echo "$freeze_sql" > "$freeze_sql_file"
-mysql --user="$MYSQL_USER" --password="$MYSQL_PASSWORD" --unbuffered --silent --skip-column-names < "$freeze_sql_file" 1> "${MYSQL_OUTPUT_FILE}" 2>> "$LOGFILE" &
+mysql --defaults-file=$DIR/conf/my_extra.cnf --unbuffered --silent --skip-column-names < "$freeze_sql_file" 1> "${MYSQL_OUTPUT_FILE}" 2>> "$LOGFILE" &
 
 FREEZE_SESSION_PID=$!
 echo "$(date -Ins) - Started MySQL freeze session, PID is $FREEZE_SESSION_PID..." >> "$LOGFILE"
@@ -77,7 +72,7 @@ while [ ! -f "$MYSQL_FREEZE_LOCKFILE" ]; do
 
       if [ -n "$FREEZE_THREAD_ID" ]; then
         echo "$(date -Ins) - Killing MySQL thread. ID is $FREEZE_THREAD_ID." >> "$LOGFILE"
-        if mysqladmin --user="$MYSQL_USER" --password="$MYSQL_PASSWORD" kill "${FREEZE_THREAD_ID}" ; then
+        if mysqladmin  --defaults-file=$DIR/conf/my_extra.cnf kill "${FREEZE_THREAD_ID}" ; then
             echo "$(date -Ins) - $FREEZE_THREAD_ID thread was killed." >> "$LOGFILE"
         else
             echo "$(date -Ins) - Unable to kill thread $FREEZE_THREAD_ID." >> "$LOGFILE"

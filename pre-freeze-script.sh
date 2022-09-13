@@ -9,7 +9,7 @@ echo "$(date -Ins) -------------------------------------------------------------
 echo "$(date -Ins) - Pre-capture data script started." >> "$LOGFILE"
 
 if [ "$MYSQL_FREEZE" -eq "1" ]; then
-    if mysqladmin ping > /dev/null 2>&1; then
+    if mysqladmin --defaults-file=$DIR/conf/my_extra.cnf ping > /dev/null 2>&1; then
         source "$DIR"/freeze-mysql.sh
     else
         echo "$(date -Ins) - MySQL server is not available." >> "$LOGFILE"
